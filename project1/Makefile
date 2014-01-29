@@ -4,12 +4,11 @@ CC= gcc
 CFLAGS= -g
 
 # libraries are already in the link path.
-LIBS = -lsox
 
 all:   wreckingball
 
 wreckingball: wreckingball.c
-	$(CC) $(CFLAGS) -o wreckingball wreckingball.c -c -g $(LIBS)
+	$(CC) $(CFLAGS) wreckingball.c -c -lsox
 
 clean:
 	rm wreckingball

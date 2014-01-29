@@ -16,8 +16,10 @@ void usage() {
 void randomize_byte_order(unsigned int *sample_order) {
    unsigned int i;
 
+   srand(103);
+
    for(i=0;i<SONG_LENGTH_S; i++) {
-      sample_order[i] = SONG_LENGTH_S - i;
+      sample_order[i] = rand()%30;
    }
 
 }
