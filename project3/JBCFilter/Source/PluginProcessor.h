@@ -83,16 +83,14 @@ public:
     
     enum Parameters
     {
-        freqParam = 0,
-        gainParam,
-        delayParam,
+        delayParam = 0,
         cutoffParam,
         
         totalNumParams
     };
     
-    float gain, delay, cutoff;
-    double angle;
+    float delay;
+    double angle, cutoff;
     int nyquist;
 
 private:

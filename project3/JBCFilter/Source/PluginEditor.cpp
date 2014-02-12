@@ -17,20 +17,12 @@ JbcfilterAudioProcessorEditor::JbcfilterAudioProcessorEditor (JbcfilterAudioProc
     : AudioProcessorEditor (ownerFilter),
     infoLabel (String::empty),
     tLabel ("", "this math is so over my head lol."),
-    gainLabel ("", "level:"),
     delayLabel ("", "Delay:"),
     cutoffLabel ("", "Cutoff Frequency:"),
-    gainSlider ("Gain"),
     delaySlider ("Delay"),
     cutoffSlider("cutoff freq")
 {
     // This is where our plugin's editor size is set.
-    
-    addAndMakeVisible(gainSlider);
-    gainSlider.setSliderStyle(Slider::Rotary);
-    gainSlider.addListener(this);
-    gainSlider.setRange(0.0, 1.0, 0.01);
-    
     addAndMakeVisible(delaySlider);
     delaySlider.setSliderStyle(Slider::Rotary);
     delaySlider.addListener(this);
@@ -41,9 +33,6 @@ JbcfilterAudioProcessorEditor::JbcfilterAudioProcessorEditor (JbcfilterAudioProc
     cutoffSlider.addListener(this);
     cutoffSlider.setRange(1.0, 3000.0, 1.0);
     
-    //setup labels
-    gainLabel.attachToComponent(&gainSlider, false);
-    gainLabel.setFont(Font (14.0f));
   
     delayLabel.attachToComponent(&delaySlider, false);
     delayLabel.setFont(Font (14.0f));
@@ -89,8 +78,7 @@ void JbcfilterAudioProcessorEditor::paint (Graphics& g)
 void JbcfilterAudioProcessorEditor::resized()
 {
     infoLabel.setBounds (10, 4, 400, 25);
-    gainSlider.setBounds (10, 60, 120, 40);
-    delaySlider.setBounds (140, 60, 120, 40);
+    delaySlider.setBounds (10, 60, 120, 40);
     cutoffSlider.setBounds(270, 60, 120, 40);
     
     resizer->setBounds (getWidth() - 16, getHeight() - 16, 16, 16);
@@ -110,7 +98,6 @@ void JbcfilterAudioProcessorEditor::timerCallback()
     if (lastDisplayedPosition != newPos)
         displayPositionInfo (newPos);
     
-    gainSlider.setValue (ourProcessor->gain, dontSendNotification);
     delaySlider.setValue (ourProcessor->delay, dontSendNotification);
     delaySlider.setValue(ourProcessor->delay, dontSendNotification);
 }
@@ -118,16 +105,7 @@ void JbcfilterAudioProcessorEditor::timerCallback()
 // This is our Slider::Listener callback, when the user drags a slider.
 void JbcfilterAudioProcessorEditor::sliderValueChanged (Slider* slider)
 {
-    
-    if (slider == &gainSlider)
-    {
-        // It's vital to use setParameterNotifyingHost to change any parameters that are automatable
-        // by the host, rather than just modifying them directly, otherwise the host won't know
-        // that they've changed.
-        getProcessor()->setParameterNotifyingHost (JbcfilterAudioProcessor::gainParam,
-                                                   (float) gainSlider.getValue());
-    }
-    else if (slider == &delaySlider)
+    if (slider == &delaySlider)
     {
         getProcessor()->setParameterNotifyingHost (JbcfilterAudioProcessor::delayParam,
                                                    (float) delaySlider.getValue());

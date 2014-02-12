@@ -15,10 +15,10 @@
 AudioProcessor* JUCE_CALLTYPE createPluginFilter();
 const float dGain = 1.0f;
 const float dDelay = 0.0f;
-const float dCutoffFreq = 1.0f;
+const float dCutoffFreq = 0.0f;
 const std::complex<double> imag = std::sqrt(std::complex<double>(-1));
 std::complex<double> z1, z2, z3, z4;
-std::complex<double> c1, c2, c3, c4;
+std::complex<double> cB, cC, cD, cE;
 
 
 
@@ -29,7 +29,7 @@ JbcfilterAudioProcessor::JbcfilterAudioProcessor()
 {
     freqSliderVal = 800.0;
     // Set up some default values..
-    gain   = dGain;
+    //gain   = dGain;
     delay  = dDelay;
     cutoff = dCutoffFreq;
     
@@ -61,10 +61,8 @@ float JbcfilterAudioProcessor::getParameter (int index)
 {
     
     switch(index) {
-        case freqParam:
-            return freqSliderVal;
-        case gainParam:
-            return gain;
+        //case gainParam:
+          //  return gain;
         case delayParam:
             return delay;
         case cutoffParam:
@@ -84,8 +82,8 @@ void JbcfilterAudioProcessor::setParameter (int index, float newValue)
         case delayParam:
             delay = newValue;
             break;
-        case gainParam:
-            gain = newValue;
+        //case gainParam:
+          //  gain = newValue;
             break;
         default:
             break;
@@ -96,7 +94,7 @@ float JbcfilterAudioProcessor::getParameterDefaultValue (int index)
 {
     switch (index)
     {
-        case gainParam: return dGain;
+        //case gainParam: return dGain;
         case delayParam: return dDelay;
         case cutoffParam: return dCutoffFreq;
         default: break;
@@ -114,25 +112,43 @@ std::complex<double> computeZpole(double theta, std::complex<double> sPole)
 //compute new coefficient values for the new cutoff frequency
 void JbcfilterAudioProcessor::updateCoefficients (float cutOff)
 {
-    angle = (((cutOff * nyquist) / nyquist) * double_Pi);
+    angle = (((cutOff * nyquist) / nyquist) * 3.141592653589793238463);
     
     z1 = computeZpole(angle, sPole_1);
     z2 = computeZpole(angle, sPole_2);
     z3 = computeZpole(angle, sPole_3);
     z4 = computeZpole(angle, sPole_4);
+    std::cout << "z1 = " << cB << std::endl;
+    std::cout << "z2 = " << cC << std::endl;
+    std::cout << "z3 = " << cD << std::endl;
+    std::cout << "z4 = " << cE << std::endl;
+    //hard coding equation from class...
+    cB = z1 + z3 + z3 + z4;
     
+    cC = (z1 * z2) +
+         (z1 * z3) +
+         (z1 * z4) +
+         (z2 * z3) +
+         (z2 * z4) +
+         (z3 * z4);
     
+    cD = (z1 * z2 * z3) +
+         (z1 * z2 * z4) +
+         (z1 * z3 * z4) +
+         (z2 * z1 * z4);
+    
+    cE = (z1 * z2 * z3 * z4);
+    std::cout << "coefB = " << cB << std::endl;
+    std::cout << "coefC = " << cC << std::endl;
+    std::cout << "coefD = " << cD << std::endl;
+    std::cout << "coefE = " << cE << std::endl;
 }
 
 const String JbcfilterAudioProcessor::getParameterName (int index)
 {  
     switch(index){
-        case freqParam:
-            return "freqParam";
         case delayParam:
             return "delay";
-        case gainParam:
-            return "gain";
         case cutoffParam:
             return "cutoff";
         default:
@@ -258,7 +274,14 @@ void JbcfilterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
         for (int i = 0; i < samples; ++i)
         {
             const float in = channelData[i];
-            channelData[i] += delayData[dp];
+            //channelData[i] += delayData[dp];
+            channelData[i] -= delayData[dp] +
+                              (std::real(cB) * delayData[dp - 1]) +
+                              (std::real(cC) * delayData[dp - 2]) +
+                              (std::real(cD) * delayData[dp - 3]) +
+                              (std::real(cE) * delayData[dp - 4]);
+            
+            
             delayData[dp] = (delayData[dp] + in) * delay;
             dp += 1;
             if (dp >= delayBufferSamples)
@@ -300,7 +323,7 @@ void JbcfilterAudioProcessor::getStateInformation (MemoryBlock& destData)
     // add some attributes to it..
     xml.setAttribute ("uiWidth", lastUIWidth);
     xml.setAttribute ("uiHeight", lastUIHeight);
-    xml.setAttribute ("gain", gain);
+    //xml.setAttribute ("gain", gain);
     xml.setAttribute ("delay", delay);
     
     // then use this helper function to stuff it into the binary blob and return it..
@@ -324,7 +347,7 @@ void JbcfilterAudioProcessor::setStateInformation (const void* data, int sizeInB
             lastUIWidth = xmlState->getIntAttribute ("uiWidth", lastUIWidth);
             lastUIHeight = xmlState->getIntAttribute ("uiHeight", lastUIHeight);
             
-            gain = (float) xmlState->getDoubleAttribute ("gain", gain);
+            //gain = (float) xmlState->getDoubleAttribute ("gain", gain);
             delay = (float) xmlState->getDoubleAttribute ("delay", delay);
         }
     }

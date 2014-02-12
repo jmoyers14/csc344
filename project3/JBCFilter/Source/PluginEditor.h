@@ -31,8 +31,8 @@ public:
     void sliderValueChanged (Slider*) override;
     
 private:
-    Label infoLabel, tLabel, gainLabel, delayLabel, cutoffLabel;
-    Slider gainSlider, delaySlider, cutoffSlider;
+    Label infoLabel, tLabel, delayLabel, cutoffLabel;
+    Slider delaySlider, cutoffSlider;
     ScopedPointer<ResizableCornerComponent> resizer;
     ComponentBoundsConstrainer resizeLimits;
     
