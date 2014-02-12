@@ -12,7 +12,8 @@
 #define PLUGINPROCESSOR_H_INCLUDED
 
 #include "../JuceLibraryCode/JuceHeader.h"
-
+#include <complex>
+#include <math.h>
 
 //==============================================================================
 /**
@@ -67,11 +68,17 @@ public:
     void getStateInformation (MemoryBlock& destData);
     void setStateInformation (const void* data, int sizeInBytes);
     
+    void updateCoefficients (float cutOff);
     
     
     
     AudioPlayHead::CurrentPositionInfo lastPosInfo;
     int lastUIWidth, lastUIHeight;
+    
+    std::complex<double> sPole_1 = std::complex<double>(-0.14113177417460146,0.9847055588695726);
+    std::complex<double> sPole_2 = std::complex<double>(-0.3407222432940997,0.40787839742795523);
+    std::complex<double> sPole_3 = std::complex<double>(-0.3407222432940997,-0.40787839742795506);
+    std::complex<double> sPole_4 = std::complex<double>(-0.1411317741746015,-0.9847055588695726);
     
     
     enum Parameters
@@ -80,13 +87,13 @@ public:
         gainParam,
         delayParam,
         cutoffParam,
-        anotherParam,
         
         totalNumParams
     };
     
     float gain, delay, cutoff;
-
+    double angle;
+    int nyquist;
 
 private:
     //==============================================================================

@@ -10,17 +10,15 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
-#include <complex>
-#include <math.h>
+
 
 AudioProcessor* JUCE_CALLTYPE createPluginFilter();
 const float dGain = 1.0f;
 const float dDelay = 0.0f;
 const float dCutoffFreq = 1.0f;
 const std::complex<double> imag = std::sqrt(std::complex<double>(-1));
-std::complex<double> sPoles[4];
-std::complex<double> zPoles[4];
-std::complex<double> coefficients[4];
+std::complex<double> z1, z2, z3, z4;
+std::complex<double> c1, c2, c3, c4;
 
 
 
@@ -40,15 +38,12 @@ JbcfilterAudioProcessor::JbcfilterAudioProcessor()
     
     lastPosInfo.resetToDefault();
     delayPosition = 0;
-    
-    //compute chebyshev poles
-    for (int i=0; i<4; i++) {
-        sPoles[i] = imag * cos((1.0 / 4.0) * acos((imag/0.5)) + (((i) * double_Pi) / 4));
-    }
+    nyquist = (getSampleRate() / 2);
 }
 
 JbcfilterAudioProcessor::~JbcfilterAudioProcessor()
 {
+    
 }
 
 //==============================================================================
@@ -84,6 +79,7 @@ void JbcfilterAudioProcessor::setParameter (int index, float newValue)
     switch (index) {
         case cutoffParam:
             cutoff = newValue;
+            updateCoefficients(cutoff);
             break;
         case delayParam:
             delay = newValue;
@@ -107,6 +103,25 @@ float JbcfilterAudioProcessor::getParameterDefaultValue (int index)
     }
     
     return 0.0f;
+}
+
+//convert given pole value form s space to z space
+std::complex<double> computeZpole(double theta, std::complex<double> sPole)
+{
+    return (1.0 + ((sPole * theta) / 2.0)) / (1.0 - ((sPole * theta) / 2.0));
+}
+
+//compute new coefficient values for the new cutoff frequency
+void JbcfilterAudioProcessor::updateCoefficients (float cutOff)
+{
+    angle = (((cutOff * nyquist) / nyquist) * double_Pi);
+    
+    z1 = computeZpole(angle, sPole_1);
+    z2 = computeZpole(angle, sPole_2);
+    z3 = computeZpole(angle, sPole_3);
+    z4 = computeZpole(angle, sPole_4);
+    
+    
 }
 
 const String JbcfilterAudioProcessor::getParameterName (int index)

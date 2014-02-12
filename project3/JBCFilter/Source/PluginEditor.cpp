@@ -16,6 +16,7 @@
 JbcfilterAudioProcessorEditor::JbcfilterAudioProcessorEditor (JbcfilterAudioProcessor* ownerFilter)
     : AudioProcessorEditor (ownerFilter),
     infoLabel (String::empty),
+    tLabel ("", "this math is so over my head lol."),
     gainLabel ("", "level:"),
     delayLabel ("", "Delay:"),
     cutoffLabel ("", "Cutoff Frequency:"),
@@ -51,8 +52,11 @@ JbcfilterAudioProcessorEditor::JbcfilterAudioProcessorEditor (JbcfilterAudioProc
     cutoffLabel.setFont(Font(14.0f));
     
     //add timer
-    addAndMakeVisible(infoLabel);
-    infoLabel.setColour(Label::textColourId, Colours::red);
+    //addAndMakeVisible(infoLabel);
+    //infoLabel.setColour(Label::textColourId, Colours::red);
+    
+    addAndMakeVisible(tLabel);
+    infoLabel.setColour(Label::textColourId, Colours::pink);
     
     // add the triangular resizer component for the bottom-right of the UI
     addAndMakeVisible (resizer = new ResizableCornerComponent (this, &resizeLimits));
