@@ -18,7 +18,7 @@
 //==============================================================================
 /**
 */
-class JbcfilterAudioProcessorEditor  : public AudioProcessorEditor, public SliderListener, public Timer
+class JbcfilterAudioProcessorEditor  : public AudioProcessorEditor, public SliderListener, public Timer, public ButtonListener
 {
 public:
     JbcfilterAudioProcessorEditor (JbcfilterAudioProcessor* ownerFilter);
@@ -29,12 +29,14 @@ public:
     void timerCallback() override;
     void resized() override;
     void sliderValueChanged (Slider*) override;
+    void buttonClicked (Button*) override;
     
 private:
-    Label infoLabel, tLabel, delayLabel, cutoffLabel;
-    Slider delaySlider, cutoffSlider;
+    Label infoLabel, tLabel, delayLabel, cutoffLabel, distLabel;
+    Slider delaySlider, cutoffSlider, distortionSlider;
     ScopedPointer<ResizableCornerComponent> resizer;
     ComponentBoundsConstrainer resizeLimits;
+    ToggleButton distortionEnabledButton;
     
     AudioPlayHead::CurrentPositionInfo lastDisplayedPosition;
     

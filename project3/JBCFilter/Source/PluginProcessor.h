@@ -68,7 +68,7 @@ public:
     void getStateInformation (MemoryBlock& destData);
     void setStateInformation (const void* data, int sizeInBytes);
     
-    void updateCoefficients (float cutOff);
+    
     
     
     
@@ -85,19 +85,25 @@ public:
     {
         delayParam = 0,
         cutoffParam,
+        distortionEnabledParam,
+        distortionParam,
         
         totalNumParams
     };
     
     float delay;
+    double distortion;
     double angle, cutoff;
     int nyquist;
-
+    bool distortionEnabledFlag;
+    
 private:
     //==============================================================================
     AudioSampleBuffer delayBuffer, lowPassBuffer;
     int delayPosition;
     double freqSliderVal;
+    void updateCoefficients (float cutOff);
+    std::complex<double> computeZpole(double theta, std::complex<double> sPole);
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (JbcfilterAudioProcessor)
 

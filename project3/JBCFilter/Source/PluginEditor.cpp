@@ -16,11 +16,13 @@
 JbcfilterAudioProcessorEditor::JbcfilterAudioProcessorEditor (JbcfilterAudioProcessor* ownerFilter)
     : AudioProcessorEditor (ownerFilter),
     infoLabel (String::empty),
-    tLabel ("", "this math is so over my head lol."),
+    tLabel ("", "Distortion"),
     delayLabel ("", "Delay:"),
     cutoffLabel ("", "Cutoff Frequency:"),
+    distLabel("", "Dist level"),
     delaySlider ("Delay"),
-    cutoffSlider("cutoff freq")
+    cutoffSlider("cutoff freq"),
+    distortionSlider("Dist Adjust")
 {
     // This is where our plugin's editor size is set.
     addAndMakeVisible(delaySlider);
@@ -33,7 +35,20 @@ JbcfilterAudioProcessorEditor::JbcfilterAudioProcessorEditor (JbcfilterAudioProc
     cutoffSlider.addListener(this);
     cutoffSlider.setRange(1.0, 3000.0, 1.0);
     
-  
+    addAndMakeVisible(distortionSlider);
+    distortionSlider.setSliderStyle(Slider::Rotary);
+    distortionSlider.addListener(this);
+    distortionSlider.setRange(0.0, 10.0, 1.0);
+    
+    // add some toggle buttons for the distortion..
+    addAndMakeVisible (distortionEnabledButton);
+    distortionEnabledButton.setToggleState(false, dontSendNotification);
+    distortionEnabledButton.setClickingTogglesState(true);
+    distortionEnabledButton.addListener (this);
+    
+    distLabel.attachToComponent(&distortionSlider, false);
+    distLabel.setFont(Font (14.0f));
+    
     delayLabel.attachToComponent(&delaySlider, false);
     delayLabel.setFont(Font (14.0f));
   
@@ -44,7 +59,7 @@ JbcfilterAudioProcessorEditor::JbcfilterAudioProcessorEditor (JbcfilterAudioProc
     //addAndMakeVisible(infoLabel);
     //infoLabel.setColour(Label::textColourId, Colours::red);
     
-    addAndMakeVisible(tLabel);
+    tLabel.attachToComponent(&distortionEnabledButton, false);
     infoLabel.setColour(Label::textColourId, Colours::pink);
     
     // add the triangular resizer component for the bottom-right of the UI
@@ -79,7 +94,8 @@ void JbcfilterAudioProcessorEditor::resized()
 {
     infoLabel.setBounds (10, 4, 400, 25);
     delaySlider.setBounds (10, 60, 120, 40);
-    cutoffSlider.setBounds(270, 60, 120, 40);
+    distortionEnabledButton.setBounds(160,60, 120, 40);
+    distortionSlider.setBounds(270, 60, 120, 40);
     
     resizer->setBounds (getWidth() - 16, getHeight() - 16, 16, 16);
     
@@ -115,10 +131,29 @@ void JbcfilterAudioProcessorEditor::sliderValueChanged (Slider* slider)
         getProcessor()->setParameterNotifyingHost(JbcfilterAudioProcessor::cutoffParam,
                                                   (float) cutoffSlider.getValue());
     }
-     
+    else if (slider == &distortionSlider)
+
+    {
+        getProcessor()->setParameterNotifyingHost(JbcfilterAudioProcessor::distortionParam,
+                                                  (float) distortionSlider.getValue());
+    }
 }
 
-
+// This is our Button::Listener callback, when the user drags a slider.
+void JbcfilterAudioProcessorEditor::buttonClicked(Button* button)
+{
+    if (button == &distortionEnabledButton)
+    {
+        // It's vital to use setParameterNotifyingHost to change any parameters that are automatable
+        // by the host, rather than just modifying them directly, otherwise the host won't know
+        // that they've changed.
+        getProcessor()->setParameterNotifyingHost (JbcfilterAudioProcessor::distortionEnabledParam, distortionEnabledButton.getToggleState() ? 1.0f : 0.0f);
+    }
+    else
+    {
+        jassertfalse;
+    }
+}
 
 
 //==============================================================================

@@ -16,6 +16,7 @@ AudioProcessor* JUCE_CALLTYPE createPluginFilter();
 const float dGain = 1.0f;
 const float dDelay = 0.0f;
 const float dCutoffFreq = 0.0f;
+const bool distortionEnabledFlag = false;
 const std::complex<double> imag = std::sqrt(std::complex<double>(-1));
 std::complex<double> z1, z2, z3, z4;
 std::complex<double> cB, cC, cD, cE;
@@ -32,7 +33,7 @@ JbcfilterAudioProcessor::JbcfilterAudioProcessor()
     //gain   = dGain;
     delay  = dDelay;
     cutoff = dCutoffFreq;
-    
+    distortion = 1.0;
     lastUIWidth = 400;
     lastUIHeight = 200;
     
@@ -77,13 +78,21 @@ void JbcfilterAudioProcessor::setParameter (int index, float newValue)
     switch (index) {
         case cutoffParam:
             cutoff = newValue;
+            printf("new cutoff %f\n", cutoff);
             updateCoefficients(cutoff);
             break;
         case delayParam:
             delay = newValue;
+            printf("new delay %f\n", delay);
             break;
         //case gainParam:
           //  gain = newValue;
+            break;
+        case distortionEnabledParam:
+            distortionEnabledFlag = newValue > 0.5f;
+            break;
+        case distortionParam:
+            distortion = newValue;
             break;
         default:
             break;
@@ -104,7 +113,7 @@ float JbcfilterAudioProcessor::getParameterDefaultValue (int index)
 }
 
 //convert given pole value form s space to z space
-std::complex<double> computeZpole(double theta, std::complex<double> sPole)
+std::complex<double> JbcfilterAudioProcessor::computeZpole(double theta, std::complex<double> sPole)
 {
     return (1.0 + ((sPole * theta) / 2.0)) / (1.0 - ((sPole * theta) / 2.0));
 }
@@ -112,7 +121,7 @@ std::complex<double> computeZpole(double theta, std::complex<double> sPole)
 //compute new coefficient values for the new cutoff frequency
 void JbcfilterAudioProcessor::updateCoefficients (float cutOff)
 {
-    angle = (((cutOff * nyquist) / nyquist) * 3.141592653589793238463);
+    angle = (((cutOff * nyquist) / nyquist) * double_Pi);
     
     z1 = computeZpole(angle, sPole_1);
     z2 = computeZpole(angle, sPole_2);
@@ -274,14 +283,24 @@ void JbcfilterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
         for (int i = 0; i < samples; ++i)
         {
             const float in = channelData[i];
-            //channelData[i] += delayData[dp];
-            channelData[i] -= delayData[dp] +
+            channelData[i] += delayData[dp];
+            
+            if(distortionEnabledFlag) {
+                channelData[i] = channelData[i] * distortion;
+                
+                if(channelData[i] > 0.03) {
+                    channelData[i]  = 0.03;
+                }
+            }
+            
+            /*
+            channelData[i] -= (delayData[dp] +
                               (std::real(cB) * delayData[dp - 1]) +
                               (std::real(cC) * delayData[dp - 2]) +
                               (std::real(cD) * delayData[dp - 3]) +
-                              (std::real(cE) * delayData[dp - 4]);
+                              (std::real(cE) * delayData[dp - 4])) * .0001;
             
-            
+            */
             delayData[dp] = (delayData[dp] + in) * delay;
             dp += 1;
             if (dp >= delayBufferSamples)
