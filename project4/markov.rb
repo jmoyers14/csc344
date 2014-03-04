@@ -30,20 +30,32 @@ As = 11
 B  = 12
 
 state_table = [
-   [C, Cs], #C
+   [C, D, D, E, G, G, G], #C
    [Cs, D], #Cs
-   [D, Ds], #D
+   [D, D, E, G, A, A, A, C], #D
    [Ds, E], #Ds
-   [E, Es], #E
-   [Es, F], #Es
+   [E, D, C, A, A, G, G, G], #E
+   [E, D, E, G, A, C, D], #Es
    [F, Fs], #F
    [Fs, G], #Fs
-   [G, Gs], #G
+   [G, G, A, A, C, D, E], #G
    [Gs, A], #Gs
-   [A, As], #A
+   [A, C, D, E, G], #A
    [As, B], #As
    [B, C]   #B
 ]
+
+length_table = {
+   "whole"   => ["8th"],
+   "half"    => ["half", "whole"],
+   "quarter" => ["quarter", "quarter", "quarter", "half"],
+   "8th"     => ["16th"],
+   "16th"    => ["16th", "16th", "whole"],
+   "32nd"    => ["32nd", "32nd", "whole"],
+   "64th"    => []
+}
+
+length_state = "whole"
 
 seq = Sequence.new()
 
@@ -70,14 +82,19 @@ track.events << Controller.new(0, CC_VOLUME, 127)
 # start at zero. We use the new Sequence#note_to_delta method to get the
 # delta time length of a single quarter note.
 track.events << ProgramChange.new(0, 1, 0)
-quarter_note_length = seq.note_to_delta('quarter')
+note_length = seq.note_to_delta(length_state)
 
 state = C
 
 for i in 0..40
    track.events << NoteOn.new(0, 64 + state, 127, 0)
-   track.events << NoteOff.new(0, 64 + state, 127, quarter_note_length)
+   track.events << NoteOff.new(0, 64 + state, 127, note_length)
    possible_states = state_table[state]
+
+   possible_length_states = length_table[length_state]
+   lindex = 0 + rand(possible_length_states.count)
+   length_state = possible_length_states[lindex]
+   note_length = seq.note_to_delta(length_state)
 
    index = 0 + rand(possible_states.count)
    puts(index)
