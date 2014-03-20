@@ -1,0 +1,19 @@
+REQUIRED LIBRARIES:
+libsndfile    www.mega-nerd.com/libsndfile/
+fftw3         http://www.fftw.org/
+
+REQUIRED FRAMEWORKS:
+OpenAl
+ALUT
+
+
+To build the poject simply type
+$make
+
+To run:
+
+./a.out filename.wav <beets-per-minute>
+
+filename.wav must be the name of a wav file sampled at 44100hz with no more that two audio channels.
+
+<beets-per-minute> is the beets per minute of the song.
